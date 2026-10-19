@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#176b45">
+<title>Guardianes del Planeta</title>
+<style>
+:root{--green:#176b45;--light:#eaf7ee;--ink:#17372b;--gold:#f4c95d;--white:#fff}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(160deg,#e6f7ff,#f2f9e8 60%,#d7f1dc);color:var(--ink)}
+main{max-width:780px;margin:auto;padding:18px}.panel{background:#ffffffed;border:1px solid #d5e9d9;border-radius:22px;padding:22px;box-shadow:0 12px 35px #16492a12}
+.hero{text-align:center;padding:28px 20px;background:linear-gradient(135deg,#135d40,#27885a);color:white;border-radius:24px;margin-bottom:16px}
+.hero .emoji{font-size:48px}.hero h1{margin:8px 0;font-size:clamp(28px,6vw,44px)}.hero p{margin:0 auto;max-width:540px;line-height:1.5}
+.pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}.pill{background:#ffffff22;border:1px solid #ffffff55;padding:6px 10px;border-radius:99px;font-size:13px}
+.stats{display:flex;gap:10px;margin:12px 0}.stat{flex:1;background:white;border-radius:14px;padding:12px;text-align:center;border:1px solid #d5e9d9}.stat strong{display:block;font-size:22px;color:var(--green)}
+h2{margin-top:0}.level{color:var(--green);font-weight:800;font-size:13px;letter-spacing:.07em;text-transform:uppercase}.question{font-size:21px;line-height:1.35;margin:10px 0 18px}
+.answers{display:grid;gap:10px}.answer,button{font:inherit;cursor:pointer;border:0;border-radius:13px;padding:13px 15px;text-align:left}.answer{background:#f3f8f2;border:2px solid #d6e7d8;color:var(--ink)}.answer:hover,.answer:focus{border-color:var(--green);outline:2px solid #a5d9b4}.answer:disabled{cursor:default;opacity:1}.answer.correct{background:#d9f6df;border-color:#319653}.answer.wrong{background:#ffe7d9;border-color:#ce7044}
+button.primary{background:var(--green);color:white;font-weight:750;text-align:center;width:100%;margin-top:16px}button.secondary{background:#e7f1e8;color:var(--green);font-weight:700;text-align:center;width:100%;margin-top:10px}
+.feedback{margin-top:14px;padding:13px;border-radius:12px;line-height:1.5;background:#eef7ec}.feedback.bad{background:#fff0e7}.progress{height:9px;background:#dceade;border-radius:99px;overflow:hidden;margin:12px 0 18px}.progress span{display:block;height:100%;background:#40a965;width:0;transition:width .2s}
+.small{font-size:13px;color:#557064;line-height:1.5}.hidden{display:none!important}.end{text-align:center}.bigscore{font-size:52px;font-weight:850;color:var(--green)}footer{text-align:center;padding:20px;font-size:12px;color:#587064}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="emoji">🌎🌱</div>
+    <h1>Guardianes del Planeta</h1>
+    <p>¿Puedes tomar decisiones que cuiden nuestra casa común? Supera cinco niveles y descubre cómo tus acciones ayudan al ambiente.</p>
+    <div class="pills"><span class="pill">🌬️ Aire</span><span class="pill">💧 Agua</span><span class="pill">🌱 Suelo</span><span class="pill">🦋 Biodiversidad</span><span class="pill">🏞️ Paisaje</span></div>
+  </header>
+  <section id="start" class="panel">
+    <h2>🎮 ¡Comienza la misión!</h2>
+    <p>Lee cada situación y elige la acción más responsable. Cada respuesta correcta suma 20 puntos. Al terminar, tendrás un reto para llevar lo aprendido a tu comunidad.</p>
+    <p class="small">Este juego es educativo: enseña decisiones cotidianas y no sustituye una evaluación técnica de la calidad del aire, el agua o el suelo.</p>
+    <button class="primary" id="startBtn">Jugar ahora</button>
+  </section>
+  <section id="play" class="panel hidden" aria-live="polite">
+    <div class="level" id="level"></div>
+    <div class="progress"><span id="bar"></span></div>
+    <div class="question" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div id="feedback" class="feedback hidden"></div>
+    <button id="nextBtn" class="primary hidden">Siguiente reto →</button>
+  </section>
+  <section id="finish" class="panel end hidden">
+    <div style="font-size:48px">🏆</div><h2>¡Misión completada!</h2>
+    <div class="bigscore" id="score"></div>
+    <p id="resultText"></p>
+    <h3>Tu reto fuera de la pantalla</h3>
+    <p>Durante los próximos siete días, realiza al menos una acción: evita quemar basura, ahorra agua, separa residuos, cuida una planta nativa o invita a alguien a proteger un espacio común.</p>
+    <button class="primary" id="againBtn">Volver a jugar</button>
+    <button class="secondary" id="shareBtn">Copiar mi resultado</button>
+    <p class="small" id="copyMsg" role="status"></p>
+  </section>
+  <footer>Campaña ambiental · “El planeta no necesita promesas, necesita acciones”.</footer>
+</main>
+<script>
+const questions=[
+ {level:"Nivel 1 de 5 · Calidad del aire",icon:"🌬️",q:"En tu comunidad alguien quiere quemar una pila de basura. ¿Qué opción ayuda más a cuidar el aire?",a:["Quemarla cuando no haya mucha gente","Separar los residuos y buscar una forma adecuada de disponer de ellos","Cubrir la pila para que no se vea"],correct:1,why:"Quemar basura libera humo y contaminantes. Separar los residuos y usar las opciones locales de recolección reduce ese riesgo."},
+ {level:"Nivel 2 de 5 · Calidad del agua",icon:"💧",q:"Te sobra aceite de cocina usado. ¿Qué debes hacer?",a:["Verterlo en el fregadero","Arrojarlo a una coladera de la calle","Guardarlo en un recipiente cerrado y consultar dónde lo reciben"],correct:2,why:"El aceite puede contaminar el agua y dificultar el tratamiento. No lo viertas al drenaje; consulta las opciones de manejo disponibles en tu localidad."},
+ {level:"Nivel 3 de 5 · Calidad del suelo",icon:"🌱",q:"Después de un picnic quedan botellas y envolturas en el suelo. ¿Qué haces?",a:["Recogerlas y separarlas según las opciones de residuos disponibles","Enterrarlas para que nadie las vea","Dejarlas porque alguien más limpiará"],correct:0,why:"Los residuos pueden permanecer mucho tiempo y afectar el suelo. Recogerlos y disponer de ellos correctamente ayuda a mantener el lugar limpio."},
+ {level:"Nivel 4 de 5 · Biodiversidad",icon:"🦋",q:"Encuentras mariposas y plantas nativas en un terreno. ¿Cuál es la mejor decisión?",a:["Arrancar las plantas para llevártelas todas","Observar sin molestar y ayudar a conservar el hábitat","Capturar los insectos para jugar"],correct:1,why:"Las especies forman parte de una red de vida. Observar sin dañarlas y conservar sus hábitats favorece la biodiversidad."},
+ {level:"Nivel 5 de 5 · Paisaje",icon:"🏞️",q:"Un espacio público se está llenando de basura. ¿Qué acción puede ayudar de forma responsable?",a:["Publicar insultos contra quienes viven cerca","Esperar sin hacer nada","Avisar a las personas responsables y proponer una actividad segura con autorización"],correct:2,why:"La colaboración respetuosa, la disposición adecuada de residuos y las actividades organizadas ayudan a recuperar espacios comunes."}
+];
+let index=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function show(which){["start","play","finish"].forEach(id=>$(id).classList.toggle("hidden",id!==which))}
+function begin(){index=0;score=0;render();show("play")}
+function render(){
+ const item=questions[index];answered=false;
+ $("level").textContent=item.level;$("question").textContent=item.icon+" "+item.q;
+ $("bar").style.width=(index/questions.length*100)+"%";$("feedback").classList.add("hidden");$("nextBtn").classList.add("hidden");
+ const area=$("answers");area.innerHTML="";
+ item.a.forEach((answer,i)=>{const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+". "+answer;b.addEventListener("click",()=>choose(i,b));area.appendChild(b)});
+}
+function choose(choice,button){
+ if(answered)return;answered=true;const item=questions[index];const buttons=[...$("answers").querySelectorAll("button")];
+ buttons.forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add("correct");if(i===choice&&i!==item.correct)b.classList.add("wrong")});
+ const good=choice===item.correct;if(good)score+=20;
+ $("feedback").classList.remove("hidden","bad");if(!good)$("feedback").classList.add("bad");
+ $("feedback").textContent=(good?"¡Correcto! +20 puntos. ":"Todavía puedes aprender. ")+item.why;
+ $("bar").style.width=((index+1)/questions.length*100)+"%";$("nextBtn").classList.remove("hidden");$("nextBtn").textContent=index===questions.length-1?"Ver mi resultado":"Siguiente reto →";
+}
+function finish(){
+ show("finish");$("score").textContent=score+"/100";
+ $("resultText").textContent=score===100?"¡Excelente! Tus cinco decisiones fueron responsables. Comparte lo aprendido y conviértelo en acciones.":score>=60?"¡Buen trabajo! Ya tienes varias herramientas para cuidar el ambiente. Repasa las explicaciones y sigue aprendiendo.":"Cada respuesta es una oportunidad para aprender. Vuelve a jugar y descubre cómo tomar decisiones más responsables.";
+}
+$("startBtn").addEventListener("click",begin);$("againBtn").addEventListener("click",()=>{show("start")});
+$("nextBtn").addEventListener("click",()=>{if(index<questions.length-1){index++;render()}else finish()});
+$("shareBtn").addEventListener("click",async()=>{const msg="Jugué Guardianes del Planeta y obtuve "+score+"/100. ¡El planeta no necesita promesas, necesita acciones!";try{await navigator.clipboard.writeText(msg);$("copyMsg").textContent="Resultado copiado. ¡Compártelo!";}catch(e){$("copyMsg").textContent=msg;}});
+</script>
+</body>
+</html>
